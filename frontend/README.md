@@ -5,7 +5,7 @@ questions about them with streamed, word-by-word answers.
 
 ## Getting started
 
-The Lumen API (in `../backend`) must be running on `http://localhost:3000`.
+The Lumen API (in `../src/backend`) must be running on `http://localhost:3000`.
 
 ```bash
 npm install
