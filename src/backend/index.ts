@@ -3,7 +3,7 @@ import { serve } from '@hono/node-server'
 import { embed } from './embeddings.js';
 import { supabase } from './db.js';
 import { chunkText } from './chunker.js';
-import { ingestDocuments } from './injest.js';
+import { ingestDocuments } from './ingest.js';
 import { generate, generateStream } from './llm.js';
 import { extractText } from 'unpdf';
 import authMiddleware from './middleware/auth.js';

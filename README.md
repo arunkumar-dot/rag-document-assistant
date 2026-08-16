@@ -182,7 +182,7 @@ If the answer is not in retrieved context, the model is prompted to reply: *I do
 ```
 src/backend/
   index.ts              # Hono routes, streaming, server
-  injest.ts             # Document insert + chunk embed loop
+  ingest.ts             # Document insert + chunk embed loop
   chunker.ts            # 500 / 50 overlapping splits
   embeddings.ts         # Ollama nomic-embed-text
   llm.ts                # llama3.1:8b generate + stream
