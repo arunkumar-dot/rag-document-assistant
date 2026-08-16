@@ -8,8 +8,17 @@ import { generate, generateStream } from './llm.js';
 import { extractText } from 'unpdf';
 import authMiddleware from './middleware/auth.js';
 import { stream as HonoStream } from 'hono/streaming'
+import { cors } from 'hono/cors'
 
 const app = new Hono()
+
+app.use("/*", cors({
+  origin: ["http://localhost:3001"],
+  allowMethods: ["GET", "POST", "OPTIONS"],
+  allowHeaders: ["Content-Type", "Authorization"],
+}))
+
+app.get("/health", (c) => c.json({ status: "ok" }))
 
 app.use("/*", authMiddleware)
 
@@ -92,6 +101,6 @@ app.post("/query", async (c)  => {
 
 
 serve({ fetch: app.fetch, port: 3000 }, () => {
-  console.log('DocFlow running on http://localhost:3000')
+  console.log('Lumen running on http://localhost:3000')
 })
 

@@ -1,8 +1,8 @@
-# DocFlow
+# Lumen
 
 Production-grade document Q&A REST API. Upload a PDF, retrieve relevant passages with hybrid search, and stream grounded answers from a local LLM.
 
-DocFlow keeps inference on your machine (Ollama) and stores vectors in Supabase with pgvector. No cloud LLM keys required.
+Lumen keeps inference on your machine (Ollama) and stores vectors in Supabase with pgvector. No cloud LLM keys required.
 
 ## Stack
 
@@ -26,7 +26,7 @@ DocFlow keeps inference on your machine (Ollama) and stores vectors in Supabase 
                          Bearer API key      │  HTTP
                          (except /health)    ▼
                           ┌─────────────────────────────────────────┐
-                          │              DocFlow API                 │
+                          │               Lumen API                  │
                           │            Hono  :3000                   │
                           │                                          │
                           │   POST /ingestDocuments                  │
@@ -84,7 +84,7 @@ ollama pull llama3.1:8b
 
 ```bash
 git clone <repo-url>
-cd docflow
+cd lumen
 npm install
 ```
 
