@@ -100,6 +100,16 @@ app.post("/query", async (c) => {
           }
         }
       }
+      if (buffer.trim()) {
+        try {
+          const json = JSON.parse(buffer)
+          if (json.response) {
+            await s.write(json.response)
+          }
+        } catch (e) {
+          console.error('Error parsing SSE chunk', e)
+        }
+      }
       await s.close()
     })
   } catch (error) {
