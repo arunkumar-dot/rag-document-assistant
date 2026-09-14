@@ -4,6 +4,24 @@ import { embed } from "./embeddings.js";
 
 export async function ingestDocuments(name: string, content: string): Promise<void> {
 
+    const {data: existing, error: existingError} = await supabase
+        .from('documents')
+        .select('id')
+        .eq('name', name)
+        .maybeSingle()
+    if(existingError){
+        throw existingError
+    }
+    if(existing){
+        const {error: deleteError} = await supabase
+            .from('documents')
+            .delete()
+            .eq('id', existing.id)
+        if(deleteError){
+            throw deleteError
+        }
+    }
+
     const {data, error} =  await supabase.from('documents').insert(
         {
             name,

@@ -1,5 +1,12 @@
 const API_BASE = ""
 
+export type Source = {
+  document_id: string
+  document_name: string
+  similarity: number
+  preview: string
+}
+
 async function readErrorMessage(res: Response): Promise<string> {
   try {
     const data = await res.json();
@@ -30,7 +37,8 @@ export async function ingestDocument(file: File, name: string): Promise<{ messag
 export async function streamQuery(
   question: string,
   onChunk: (chunk: string) => void,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  onSources?: (sources: Source[]) => void
 ): Promise<void> {
   const res = await fetch(`/api/query`, {
     method: "POST",
@@ -47,11 +55,46 @@ export async function streamQuery(
 
   const reader = res.body.getReader();
   const decoder = new TextDecoder();
+  let buffer = ""
+  let isFirstLine = true
 
   while (true) {
     const { value, done } = await reader.read();
     if (done) break;
-    if (value) onChunk(decoder.decode(value, { stream: true }));
+
+    buffer += decoder.decode(value, { stream: true })
+    const lines = buffer.split('\n')
+    buffer = lines.pop() ?? ''
+
+    for (const line of lines) {
+      if (!line.trim()) continue
+
+      if (isFirstLine && line.startsWith('{"sources"')) {
+        isFirstLine = false
+        try {
+          const json = JSON.parse(line)
+          onSources?.(json.sources)
+        } catch {
+          // malformed sources line, skip
+        }
+      } else {
+        isFirstLine = false
+        onChunk(line + '\n')
+      }
+    }
+  }
+
+  if (buffer.trim()) {
+    if (isFirstLine && buffer.startsWith('{"sources"')) {
+      try {
+        const json = JSON.parse(buffer)
+        onSources?.(json.sources)
+      } catch {
+        // malformed sources line, skip
+      }
+    } else {
+      onChunk(buffer)
+    }
   }
 }
 

@@ -5,6 +5,7 @@ import { useRef, useState } from "react";
 import { ingestDocument, streamQuery } from "@/lib/api";
 import { useToast } from "@/components/Toast";
 
+
 type Status = "idle" | "uploading" | "success" | "error";
 
 export default function UploadPage() {
@@ -16,6 +17,7 @@ export default function UploadPage() {
   const inputRef = useRef<HTMLInputElement>(null);
   const { showToast } = useToast();
   const [summary, setSummary] = useState("")
+  const [ingestMs, setIngestMs] = useState<number | null>(null)
   const [summaryStatus, setSummaryStatus] = useState<"idle" | "loading" | "done">("idle");
 
 
@@ -44,7 +46,9 @@ export default function UploadPage() {
     setErrorMessage("");
 
     try {
-      await ingestDocument(file, name.trim());
+      const start = performance.now()
+      const result = await ingestDocument(file, name.trim());
+      setIngestMs(performance.now() - start)
       setStatus("success");
       showToast("Document uploaded successfully");
 
@@ -77,9 +81,8 @@ export default function UploadPage() {
         onDragLeave={() => setIsDragActive(false)}
         onDrop={handleDrop}
         onClick={() => inputRef.current?.click()}
-        className={`flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed px-6 py-14 text-center ${
-          isDragActive ? "border-indigo-400 bg-indigo-50" : "border-gray-300"
-        }`}
+        className={`flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed px-6 py-14 text-center ${isDragActive ? "border-indigo-400 bg-indigo-50" : "border-gray-300"
+          }`}
       >
         <input
           ref={inputRef}
@@ -128,6 +131,11 @@ export default function UploadPage() {
         </button>
         {status === "error" && <p className="text-sm text-red-600">{errorMessage}</p>}
       </div>
+      {ingestMs && status === "success" && (
+        <p className="text-xs text-gray-500">
+          Ingested in {(ingestMs / 1000).toFixed(1)}s
+        </p>
+      )}
       {summaryStatus !== "idle" && (
         <div className="flex flex-col gap-3 rounded-lg border border-gray-200 p-4">
           <h2 className="text-sm font-semibold text-gray-900">Document Summary</h2>

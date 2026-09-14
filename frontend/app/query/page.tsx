@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { streamQuery } from "@/lib/api";
+import { Source, streamQuery } from "@/lib/api";
 
 type Status = "idle" | "waiting" | "streaming" | "done" | "error";
 
@@ -12,6 +12,7 @@ export default function QueryPage() {
   const [errorMessage, setErrorMessage] = useState("");
   const [elapsedMs, setElapsedMs] = useState<number | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const [sources, setSources] = useState<Source[]>([])
 
   const isBusy = status === "waiting" || status === "streaming";
 
@@ -38,7 +39,8 @@ export default function QueryPage() {
           }
           setAnswer((prev) => prev + chunk);
         },
-        controller.signal
+        controller.signal,
+        (sources) => setSources(sources)
       );
       setElapsedMs(performance.now() - start);
       setStatus("done");
@@ -57,9 +59,18 @@ export default function QueryPage() {
     setStatus("idle");
     setErrorMessage("");
     setElapsedMs(null);
+    setSources([])
   }
 
   const wordCount = answer.trim() ? answer.trim().split(/\s+/).length : 0;
+
+  const uniqueSources = sources.reduce((acc, source) => {
+    const existing = acc.find(s => s.document_id === source.document_id)
+    if (!existing || source.similarity > existing.similarity) {
+      return [...acc.filter(s => s.document_id !== source.document_id), source]
+    }
+    return acc
+  }, [] as Source[])
 
   return (
     <div className="flex flex-col gap-6">
@@ -130,6 +141,23 @@ export default function QueryPage() {
               {wordCount} words · {(elapsedMs! / 1000).toFixed(1)}s
             </p>
           )}
+        </div>
+      )}
+
+
+
+      {status === "done" && uniqueSources.length > 0 && (
+        <div className="flex flex-col gap-2">
+          <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Sources</p>
+          {uniqueSources.map((source, i) => (
+            <div key={i} className="rounded-md border border-gray-200 px-3 py-2">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-medium text-gray-700">{source.document_name}</p>
+                <p className="text-xs text-gray-400">{(source.similarity * 100).toFixed(0)}% match</p>
+              </div>
+              <p className="mt-1 text-xs text-gray-500 line-clamp-2">{source.preview}</p>
+            </div>
+          ))}
         </div>
       )}
     </div>

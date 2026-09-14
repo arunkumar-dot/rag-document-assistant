@@ -67,11 +67,18 @@ app.post("/query", async (c) => {
       }, 500)
     }
     const texts = data.map((item: any) => item.raw_text)
+    const sources = data.map((item: any) => ({
+      document_id: item.document_id,
+      document_name: item.document_name,
+      similarity: parseFloat(item.similarity.toFixed(2)),
+      preview: item.raw_text.slice(0, 150)
+    }))
     const response = await generateStream(question, texts)
 
     return HonoStream(c, async (s) => {
-      let buffer = ''
+      await s.write(JSON.stringify({ sources }) + '\n')
 
+      let buffer = ''
       for await (const chunk of response.body as any) {
         buffer += new TextDecoder().decode(chunk)
 
