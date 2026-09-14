@@ -1,9 +1,4 @@
-const API_BASE = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000").replace(/\/$/, "");
-const API_KEY = process.env.NEXT_PUBLIC_API_KEY || "";
-
-function authHeaders(): HeadersInit {
-  return API_KEY ? { Authorization: `Bearer ${API_KEY}` } : {};
-}
+const API_BASE = ""
 
 async function readErrorMessage(res: Response): Promise<string> {
   try {
@@ -20,9 +15,8 @@ export async function ingestDocument(file: File, name: string): Promise<{ messag
   formData.append("file", file);
   formData.append("name", name);
 
-  const res = await fetch(`${API_BASE}/ingestDocuments`, {
+  const res = await fetch(`/api/ingest`, {
     method: "POST",
-    headers: authHeaders(),
     body: formData,
   });
 
@@ -38,11 +32,10 @@ export async function streamQuery(
   onChunk: (chunk: string) => void,
   signal?: AbortSignal
 ): Promise<void> {
-  const res = await fetch(`${API_BASE}/query`, {
+  const res = await fetch(`/api/query`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      ...authHeaders(),
     },
     body: JSON.stringify({ question }),
     signal,

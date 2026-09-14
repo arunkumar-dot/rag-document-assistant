@@ -1,7 +1,8 @@
 "use client";
 
+
 import { useRef, useState } from "react";
-import { ingestDocument } from "@/lib/api";
+import { ingestDocument, streamQuery } from "@/lib/api";
 import { useToast } from "@/components/Toast";
 
 type Status = "idle" | "uploading" | "success" | "error";
@@ -14,6 +15,9 @@ export default function UploadPage() {
   const [isDragActive, setIsDragActive] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const { showToast } = useToast();
+  const [summary, setSummary] = useState("")
+  const [summaryStatus, setSummaryStatus] = useState<"idle" | "loading" | "done">("idle");
+
 
   const isBusy = status === "uploading";
 
@@ -40,12 +44,16 @@ export default function UploadPage() {
     setErrorMessage("");
 
     try {
-      const result = await ingestDocument(file, name.trim());
+      await ingestDocument(file, name.trim());
       setStatus("success");
-      showToast(result.message || "Documents ingested successfully");
-      setFile(null);
-      setName("");
-      if (inputRef.current) inputRef.current.value = "";
+      showToast("Document uploaded successfully");
+
+      setSummaryStatus("loading")
+      setSummary("")
+      await streamQuery(`Summarize this document in 3-4 sentences. Then list exactly 5 relevant questions someone might ask about it, formatted as a numbered list.`, (chunk) => {
+        setSummary((prev) => prev + chunk)
+      })
+      setSummaryStatus("done")
     } catch (err) {
       const message = err instanceof Error ? err.message : "Upload failed";
       setStatus("error");
@@ -120,6 +128,26 @@ export default function UploadPage() {
         </button>
         {status === "error" && <p className="text-sm text-red-600">{errorMessage}</p>}
       </div>
+      {summaryStatus !== "idle" && (
+        <div className="flex flex-col gap-3 rounded-lg border border-gray-200 p-4">
+          <h2 className="text-sm font-semibold text-gray-900">Document Summary</h2>
+          {summaryStatus === "loading" && !summary && (
+            <div className="flex flex-col gap-2">
+              <div className="h-3 w-3/4 animate-pulse rounded bg-gray-200" />
+              <div className="h-3 w-full animate-pulse rounded bg-gray-200" />
+              <div className="h-3 w-2/3 animate-pulse rounded bg-gray-200" />
+            </div>
+          )}
+          {summary && (
+            <p className="text-sm leading-relaxed text-gray-700 whitespace-pre-wrap">
+              {summary}
+              {summaryStatus === "loading" && (
+                <span className="ml-0.5 inline-block h-4 w-2 animate-pulse bg-gray-900 align-middle" />
+              )}
+            </p>
+          )}
+        </div>
+      )}
     </div>
   );
 }
