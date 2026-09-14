@@ -7,6 +7,26 @@ export type Source = {
   preview: string
 }
 
+export type Document = {
+  id: string
+  name: string
+  file_size: number
+  page_count: number
+  created_at: string
+  chunks: { count: number }[]
+}
+
+export async function listDocuments(): Promise<Document[]> {
+  const res = await fetch(`/api/documents`);
+  if (!res.ok) throw new Error(await readErrorMessage(res))
+  return res.json()
+}
+
+export async function deleteDocument(id: string): Promise<void> {
+  const res = await fetch(`/api/documents/${id}`, { method: 'DELETE' })
+  if (!res.ok) throw new Error(await readErrorMessage(res))
+}
+
 async function readErrorMessage(res: Response): Promise<string> {
   try {
     const data = await res.json();

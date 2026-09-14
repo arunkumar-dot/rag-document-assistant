@@ -47,7 +47,7 @@ export default function UploadPage() {
 
     try {
       const start = performance.now()
-      const result = await ingestDocument(file, name.trim());
+      await ingestDocument(file, name.trim());
       setIngestMs(performance.now() - start)
       setStatus("success");
       showToast("Document uploaded successfully");

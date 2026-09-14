@@ -9,7 +9,7 @@ export default function Home() {
           Upload PDF documents and ask questions about their contents.
         </p>
       </div>
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-3">
         <Link
           href="/upload"
           className="rounded-lg border border-gray-200 p-5 transition-colors hover:border-indigo-300"
@@ -23,6 +23,13 @@ export default function Home() {
         >
           <h2 className="font-medium text-gray-900">Query</h2>
           <p className="mt-1 text-sm text-gray-500">Ask a question and get a streamed answer.</p>
+        </Link>
+        <Link
+          href="/documents"
+          className="rounded-lg border border-gray-200 p-5 transition-colors hover:border-indigo-300"
+        >
+          <h2 className="font-medium text-gray-900">Documents</h2>
+          <p className="mt-1 text-sm text-gray-500">Manage your uploaded documents.</p>
         </Link>
       </div>
     </div>

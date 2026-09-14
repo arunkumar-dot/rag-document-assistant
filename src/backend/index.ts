@@ -12,6 +12,8 @@ import { cors } from 'hono/cors'
 
 const app = new Hono()
 
+
+
 app.use("/*", cors({
   origin: ["http://localhost:3001"],
   allowMethods: ["GET", "POST", "OPTIONS"],
@@ -105,6 +107,33 @@ app.post("/query", async (c) => {
       error: (error as Error).message
     }, 500)
   }
+})
+
+app.get("/documents", async (c) => {
+  const { data, error } = await supabase
+    .from('documents')
+    .select('id, name, file_size, page_count, created_at, chunks(count)')
+    .order('created_at', { ascending: false })
+  if (error) {
+    return c.json({ error: error.message }, 500)
+  }
+
+  return c.json(data, 200)
+})
+
+app.delete("/documents/:id", async (c) => {
+  const id = c.req.param('id')
+
+  const { error } = await supabase
+    .from('documents')
+    .delete()
+    .eq('id', id)
+
+  if (error) {
+    return c.json({ error: error.message }, 500)
+  }
+
+  return c.json({ message: "Document deleted successfully" }, 200)
 })
 
 
